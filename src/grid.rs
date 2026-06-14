@@ -5,6 +5,7 @@ use ratatui::{
     widgets::{Block, Paragraph, Widget},
 };
 
+#[derive(Debug, PartialEq)]
 pub struct Grid {
     pub cells: [[u32; 4]; 4],
 }

@@ -53,11 +53,11 @@ impl App {
     }
 
     pub fn move_up(&mut self) {
-        todo!()
+        self.grid = merge_row_vertical(self, "up".to_string());
     }
 
     pub fn move_down(&mut self) {
-        todo!()
+        self.grid = merge_row_vertical(self, "down".to_string());
     }
 
     /// Score is calculated by the addition of current score + sum of any merged values
@@ -88,12 +88,13 @@ impl App {
 
 fn merge_row_horizontal(row: [u32; 4], direction: String) -> [u32; 4] {
     let mut nums: Vec<u32> = row.into_iter().filter(|&val| val != 0).collect();
-    if direction == "right" {
+    if direction == "right" || direction == "down" {
         nums.reverse();
     }
     // reader tracks what val we are reading from the nums vec, if there is a merge we skip past the
     // next index so we dont double merge the same num
     let mut reader = 0;
+    // writer goes contiguous through each index
     let mut writer = 0;
 
     let mut result = [0; 4];
@@ -109,10 +110,31 @@ fn merge_row_horizontal(row: [u32; 4], direction: String) -> [u32; 4] {
         writer += 1;
     }
 
-    if direction == "right" {
+    if direction == "right" || direction == "down" {
         result.reverse();
     }
     result
+}
+
+fn merge_row_vertical(app: &mut App, direction: String) -> Grid {
+    let mut cells = [[0; 4]; 4];
+
+    for col_index in 0..4 {
+        let column = [
+            app.grid.cells[0][col_index],
+            app.grid.cells[1][col_index],
+            app.grid.cells[2][col_index],
+            app.grid.cells[3][col_index],
+        ];
+
+        let merged = merge_row_horizontal(column, direction.clone());
+
+        for row_index in 0..4 {
+            cells[row_index][col_index] = merged[row_index]
+        }
+    }
+
+    Grid { cells }
 }
 
 #[cfg(test)]
@@ -172,6 +194,30 @@ mod tests {
         assert_eq!(
             app.grid.cells,
             [[0, 0, 2, 8], [8, 16, 2, 4], [0, 0, 0, 4], [0, 0, 4, 2]]
+        );
+
+        app.move_up();
+        assert_eq!(
+            app.grid.cells,
+            [[8, 16, 4, 8], [0, 0, 4, 8], [0, 0, 0, 2], [0, 0, 0, 0]]
+        );
+
+        app.move_down();
+        assert_eq!(
+            app.grid.cells,
+            [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 16], [8, 16, 8, 2]]
+        );
+
+        app.move_up();
+        assert_eq!(
+            app.grid.cells,
+            [[8, 16, 8, 16], [0, 0, 0, 2], [0, 0, 0, 0], [0, 0, 0, 0]]
+        );
+
+        app.move_down();
+        assert_eq!(
+            app.grid.cells,
+            [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 16], [8, 16, 8, 2]]
         );
     }
 
@@ -254,39 +300,27 @@ mod tests {
         );
     }
 
-    // #[test]
-    // fn rows_merge_up() {
-    //     assert_eq!(merge_row_right([0, 2, 4, 8]), [0, 2, 4, 8]);
-    //     assert_eq!(merge_row_right([0, 2, 4, 0]), [0, 0, 2, 4]);
-    //     assert_eq!(merge_row_right([0, 0, 0, 0]), [0, 0, 0, 0]);
-    // }
+    #[test]
+    fn rows_move_up() {
+        let mut app = build_app_default();
 
-    // #[test]
-    // fn rows_move_up() {
-    //     let mut app = build_app();
-    //     app.move_right();
-    //
-    //     assert_eq!(
-    //         app.grid.cells,
-    //         [[0, 2, 2, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
-    //     );
-    // }
+        assert_eq!(
+            merge_row_vertical(&mut app, "up".to_string()),
+            Grid {
+                cells: [[0, 2, 2, 2], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+            }
+        );
+    }
 
-    // #[test]
-    // fn rows_merge_down() {
-    //     assert_eq!(merge_row_right([0, 2, 4, 8]), [0, 2, 4, 8]);
-    //     assert_eq!(merge_row_right([0, 2, 4, 0]), [0, 0, 2, 4]);
-    //     assert_eq!(merge_row_right([0, 0, 0, 0]), [0, 0, 0, 0]);
-    // }
+    #[test]
+    fn rows_move_down() {
+        let mut app = build_app_default();
 
-    // #[test]
-    // fn rows_move_down() {
-    //     let mut app = build_app();
-    //     app.move_right();
-    //
-    //     assert_eq!(
-    //         app.grid.cells,
-    //         [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 2, 2, 0]]
-    //     );
-    // }
+        assert_eq!(
+            merge_row_vertical(&mut app, "down".to_string()),
+            Grid {
+                cells: [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 2, 2, 2]]
+            }
+        );
+    }
 }
