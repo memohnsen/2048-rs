@@ -36,16 +36,18 @@ impl App {
         self.grid.cells = [[0, 0, 0, 0], [0, 0, 2, 0], [0, 2, 0, 0], [0, 0, 0, 0]]
     }
 
-    /// [0, 0, 2, 0] -> [2, 0, 0, 0]
-    /// strip zeros, merge equal neighbors left to right
-    /// then pad zeros on the right
     pub fn move_left(&mut self) {
-        todo!()
+        for row in &mut self.grid.cells {
+            *row = merge_row_left(*row)
+        }
     }
 
     pub fn move_right(&mut self) {
-        todo!()
+        for row in &mut self.grid.cells {
+            *row = merge_row_right(*row)
+        }
     }
+
     pub fn move_up(&mut self) {
         todo!()
     }
@@ -73,4 +75,41 @@ impl App {
     pub fn exit(&mut self) {
         self.exit = true;
     }
+}
+
+/// [0, 2, 2, 0] -> [4, 0, 0, 0]
+/// strip zeros [2, 2]
+/// merge equal neighbors left to right [4]
+/// then pad zeros on the right [4, 0, 0, 0]
+fn merge_row_left(row: [u32; 4]) -> [u32; 4] {
+    let nums: Vec<u32> = row.into_iter().filter(|&val| val != 0).collect();
+
+    let mut result = [0; 4];
+
+    for (index, val) in nums.iter().enumerate() {
+        result[index] = *val;
+    }
+
+    result
+}
+
+/// [4, 0, 0, 2] -> [0, 0, 4, 2]
+/// strip zeros [4, 2]
+/// reverse the list [2, 4]
+/// merge left to right [2, 4]
+/// then pad zeros on the right [2, 4, 0, 0]
+/// reverse [0, 0, 4, 2]
+fn merge_row_right(row: [u32; 4]) -> [u32; 4] {
+    let mut nums: Vec<u32> = row.into_iter().filter(|&val| val != 0).collect();
+
+    nums.reverse();
+
+    let mut result = [0; 4];
+
+    for (index, val) in nums.iter().enumerate() {
+        result[index] = *val;
+    }
+
+    result.reverse();
+    result
 }
