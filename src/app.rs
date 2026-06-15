@@ -15,6 +15,14 @@ pub enum Screen {
     GameOver,
 }
 
+#[derive(PartialEq, Clone)]
+pub enum Direction {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
 impl Default for App {
     fn default() -> Self {
         Self {
@@ -40,24 +48,25 @@ impl App {
         self.current_screen = Screen::Playing;
     }
 
-    pub fn move_left(&mut self) {
-        for row in &mut self.grid.cells {
-            *row = merge_row_horizontal(*row, "left".to_string())
+    pub fn move_nums(&mut self, direction: Direction) {
+        match direction {
+            Direction::Up => {
+                self.grid = merge_row_vertical(self, Direction::Up);
+            }
+            Direction::Down => {
+                self.grid = merge_row_vertical(self, Direction::Down);
+            }
+            Direction::Left => {
+                for row in &mut self.grid.cells {
+                    *row = merge_row_horizontal(*row, Direction::Left)
+                }
+            }
+            Direction::Right => {
+                for row in &mut self.grid.cells {
+                    *row = merge_row_horizontal(*row, Direction::Right)
+                }
+            }
         }
-    }
-
-    pub fn move_right(&mut self) {
-        for row in &mut self.grid.cells {
-            *row = merge_row_horizontal(*row, "right".to_string())
-        }
-    }
-
-    pub fn move_up(&mut self) {
-        self.grid = merge_row_vertical(self, "up".to_string());
-    }
-
-    pub fn move_down(&mut self) {
-        self.grid = merge_row_vertical(self, "down".to_string());
     }
 
     /// Score is calculated by the addition of current score + sum of any merged values
@@ -76,19 +85,14 @@ impl App {
         todo!()
     }
 
-    // NOTE: dev only remove before release
-    pub fn full_tiles(&mut self) {
-        self.grid.cells = [[2, 4, 2, 2], [8, 16, 2, 4], [2, 2, 0, 0], [0, 0, 4, 2]]
-    }
-
     pub fn exit(&mut self) {
         self.exit = true;
     }
 }
 
-fn merge_row_horizontal(row: [u32; 4], direction: String) -> [u32; 4] {
+fn merge_row_horizontal(row: [u32; 4], direction: Direction) -> [u32; 4] {
     let mut nums: Vec<u32> = row.into_iter().filter(|&val| val != 0).collect();
-    if direction == "right" || direction == "down" {
+    if direction == Direction::Right || direction == Direction::Down {
         nums.reverse();
     }
     // reader tracks what val we are reading from the nums vec, if there is a merge we skip past the
@@ -110,13 +114,13 @@ fn merge_row_horizontal(row: [u32; 4], direction: String) -> [u32; 4] {
         writer += 1;
     }
 
-    if direction == "right" || direction == "down" {
+    if direction == Direction::Right || direction == Direction::Down {
         result.reverse();
     }
     result
 }
 
-fn merge_row_vertical(app: &mut App, direction: String) -> Grid {
+fn merge_row_vertical(app: &mut App, direction: Direction) -> Grid {
     let mut cells = [[0; 4]; 4];
 
     for col_index in 0..4 {
@@ -172,49 +176,49 @@ mod tests {
     #[test]
     fn full_game_play() {
         let mut app = build_app_full();
-        app.move_left();
+        app.move_nums(Direction::Left);
         assert_eq!(
             app.grid.cells,
             [[2, 4, 4, 0], [8, 16, 2, 4], [4, 0, 0, 0], [4, 2, 0, 0]]
         );
 
-        app.move_right();
+        app.move_nums(Direction::Right);
         assert_eq!(
             app.grid.cells,
             [[0, 0, 2, 8], [8, 16, 2, 4], [0, 0, 0, 4], [0, 0, 4, 2]]
         );
 
-        app.move_left();
+        app.move_nums(Direction::Left);
         assert_eq!(
             app.grid.cells,
             [[2, 8, 0, 0], [8, 16, 2, 4], [4, 0, 0, 0], [4, 2, 0, 0]]
         );
 
-        app.move_right();
+        app.move_nums(Direction::Right);
         assert_eq!(
             app.grid.cells,
             [[0, 0, 2, 8], [8, 16, 2, 4], [0, 0, 0, 4], [0, 0, 4, 2]]
         );
 
-        app.move_up();
+        app.move_nums(Direction::Up);
         assert_eq!(
             app.grid.cells,
             [[8, 16, 4, 8], [0, 0, 4, 8], [0, 0, 0, 2], [0, 0, 0, 0]]
         );
 
-        app.move_down();
+        app.move_nums(Direction::Down);
         assert_eq!(
             app.grid.cells,
             [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 16], [8, 16, 8, 2]]
         );
 
-        app.move_up();
+        app.move_nums(Direction::Up);
         assert_eq!(
             app.grid.cells,
             [[8, 16, 8, 16], [0, 0, 0, 2], [0, 0, 0, 0], [0, 0, 0, 0]]
         );
 
-        app.move_down();
+        app.move_nums(Direction::Down);
         assert_eq!(
             app.grid.cells,
             [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 16], [8, 16, 8, 2]]
@@ -224,23 +228,23 @@ mod tests {
     #[test]
     fn rows_merge_left() {
         assert_eq!(
-            merge_row_horizontal([0, 2, 4, 8], "left".to_string()),
+            merge_row_horizontal([0, 2, 4, 8], Direction::Left),
             [2, 4, 8, 0]
         );
         assert_eq!(
-            merge_row_horizontal([2, 4, 8, 0], "left".to_string()),
+            merge_row_horizontal([2, 4, 8, 0], Direction::Left),
             [2, 4, 8, 0]
         );
         assert_eq!(
-            merge_row_horizontal([2, 2, 4, 2], "left".to_string()),
+            merge_row_horizontal([2, 2, 4, 2], Direction::Left),
             [4, 4, 2, 0]
         );
         assert_eq!(
-            merge_row_horizontal([0, 0, 0, 0], "left".to_string()),
+            merge_row_horizontal([0, 0, 0, 0], Direction::Left),
             [0, 0, 0, 0]
         );
         assert_eq!(
-            merge_row_horizontal([2, 4, 4, 0], "left".to_string()),
+            merge_row_horizontal([2, 4, 4, 0], Direction::Left),
             [2, 8, 0, 0]
         );
     }
@@ -248,14 +252,14 @@ mod tests {
     #[test]
     fn rows_move_left() {
         let mut app = build_app_default();
-        app.move_left();
+        app.move_nums(Direction::Left);
         assert_eq!(
             app.grid.cells,
             [[0, 0, 0, 0], [4, 0, 0, 0], [2, 0, 0, 0], [0, 0, 0, 0]]
         );
 
         let mut app = build_app_full();
-        app.move_left();
+        app.move_nums(Direction::Left);
         assert_eq!(
             app.grid.cells,
             [[2, 4, 4, 0], [8, 16, 2, 4], [4, 0, 0, 0], [4, 2, 0, 0]]
@@ -265,19 +269,19 @@ mod tests {
     #[test]
     fn rows_merge_right() {
         assert_eq!(
-            merge_row_horizontal([0, 2, 4, 8], "right".to_string()),
+            merge_row_horizontal([0, 2, 4, 8], Direction::Right),
             [0, 2, 4, 8]
         );
         assert_eq!(
-            merge_row_horizontal([0, 2, 4, 0], "right".to_string()),
+            merge_row_horizontal([0, 2, 4, 0], Direction::Right),
             [0, 0, 2, 4]
         );
         assert_eq!(
-            merge_row_horizontal([0, 0, 0, 0], "right".to_string()),
+            merge_row_horizontal([0, 0, 0, 0], Direction::Right),
             [0, 0, 0, 0]
         );
         assert_eq!(
-            merge_row_horizontal([0, 2, 2, 0], "right".to_string()),
+            merge_row_horizontal([0, 2, 2, 0], Direction::Right),
             [0, 0, 0, 4]
         );
     }
@@ -285,7 +289,7 @@ mod tests {
     #[test]
     fn rows_move_right() {
         let mut app = build_app_default();
-        app.move_right();
+        app.move_nums(Direction::Right);
 
         assert_eq!(
             app.grid.cells,
@@ -293,7 +297,7 @@ mod tests {
         );
 
         let mut app = build_app_full();
-        app.move_right();
+        app.move_nums(Direction::Right);
         assert_eq!(
             app.grid.cells,
             [[0, 2, 4, 4], [8, 16, 2, 4], [0, 0, 0, 4], [0, 0, 4, 2]]
@@ -305,7 +309,7 @@ mod tests {
         let mut app = build_app_default();
 
         assert_eq!(
-            merge_row_vertical(&mut app, "up".to_string()),
+            merge_row_vertical(&mut app, Direction::Up),
             Grid {
                 cells: [[0, 2, 2, 2], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
             }
@@ -317,7 +321,7 @@ mod tests {
         let mut app = build_app_default();
 
         assert_eq!(
-            merge_row_vertical(&mut app, "down".to_string()),
+            merge_row_vertical(&mut app, Direction::Down),
             Grid {
                 cells: [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 2, 2, 2]]
             }

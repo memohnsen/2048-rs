@@ -2,7 +2,7 @@ use std::io;
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{DefaultTerminal, Frame};
-use tui_2048::app::{App, Screen};
+use tui_2048::app::{App, Direction, Screen};
 
 fn main() -> io::Result<()> {
     let mut terminal = ratatui::init();
@@ -36,14 +36,12 @@ pub fn handle_key_event(app: &mut App, key_event: KeyEvent) {
     match app.current_screen {
         Screen::Playing => match key_event.code {
             KeyCode::Char('q') => app.exit(),
-            KeyCode::Char('l') => app.move_right(),
-            KeyCode::Char('h') => app.move_left(),
-            KeyCode::Char('j') => app.move_down(),
-            KeyCode::Char('k') => app.move_up(),
+            KeyCode::Char('l') => app.move_nums(Direction::Right),
+            KeyCode::Char('h') => app.move_nums(Direction::Left),
+            KeyCode::Char('j') => app.move_nums(Direction::Down),
+            KeyCode::Char('k') => app.move_nums(Direction::Up),
             KeyCode::Char('s') => app.show_scores(),
             KeyCode::Char('n') => app.new_game(),
-            // NOTE: dev only remove before release
-            KeyCode::Char('f') => app.full_tiles(),
             _ => {}
         },
         Screen::GameOver => match key_event.code {
@@ -53,24 +51,4 @@ pub fn handle_key_event(app: &mut App, key_event: KeyEvent) {
             _ => {}
         },
     }
-}
-
-#[cfg(test)]
-mod tests {
-    // use super::*;
-    // use ratatui::style::Style;
-
-    // #[test]
-    // fn handle_key_event() {
-    //     let mut app = App::default();
-    //     app.handle_key_event(KeyCode::Right.into());
-    //     assert_eq!(app.counter, 1);
-
-    //     app.handle_key_event(KeyCode::Left.into());
-    //     assert_eq!(app.counter, 0);
-
-    //     let mut app = App::default();
-    //     app.handle_key_event(KeyCode::Char('q').into());
-    //     assert!(app.exit);
-    // }
 }
