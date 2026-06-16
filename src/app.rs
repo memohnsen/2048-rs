@@ -1,4 +1,7 @@
-use rand::random_range;
+use rand::{
+    distr::{Bernoulli, Distribution},
+    random_range, rng, thread_rng,
+};
 
 use crate::ui::Grid;
 
@@ -85,10 +88,17 @@ impl App {
 
     // TODO: Bug - when at an edge and unable to move any cells that direction currently a move in
     // that dir is still allowed
+    // And add tests
     pub fn spawn_tile(&mut self) {
         let nums = [2, 4];
-        let random_index = random_range(0..=1);
-        let rand_selected = nums[random_index];
+
+        let mut rng = rng();
+        let random_chance = Bernoulli::new(0.70).unwrap();
+        let rand_selected = if random_chance.sample(&mut rng) {
+            nums[0]
+        } else {
+            nums[1]
+        };
 
         let mut zero_coordinates: Vec<(usize, usize)> = Vec::new();
 
@@ -118,15 +128,17 @@ impl App {
     }
 }
 
+/// If the numbers in 0 and 1 match then we need to merge, we use the reader and writer vars to keep
+/// track of the item we need to mutate as to not accidentally merge a number twice
+/// reader tracks what val we are reading from the nums vec, if there is a merge we skip past the
+/// next index so we dont double merge the same num
+/// writer goes contiguous through each index
 fn merge_row_horizontal(app: &mut App, row: [u32; 4], direction: Direction) -> [u32; 4] {
     let mut nums: Vec<u32> = row.into_iter().filter(|&val| val != 0).collect();
     if direction == Direction::Right || direction == Direction::Down {
         nums.reverse();
     }
-    // reader tracks what val we are reading from the nums vec, if there is a merge we skip past the
-    // next index so we dont double merge the same num
     let mut reader = 0;
-    // writer goes contiguous through each index
     let mut writer = 0;
 
     let mut result = [0; 4];
@@ -149,6 +161,8 @@ fn merge_row_horizontal(app: &mut App, row: [u32; 4], direction: Direction) -> [
     result
 }
 
+/// Go through the whole Grid item from App and map the current grid to columns
+/// From there it's the same mutation as above where we mutate and reverse if needed
 fn merge_row_vertical(app: &mut App, direction: Direction) -> Grid {
     let mut cells = [[0; 4]; 4];
 
@@ -210,43 +224,36 @@ mod tests {
             app.grid.cells,
             [[2, 4, 4, 0], [8, 16, 2, 4], [4, 0, 0, 0], [4, 2, 0, 0]]
         );
-
         app.move_nums(Direction::Right);
         assert_eq!(
             app.grid.cells,
             [[0, 0, 2, 8], [8, 16, 2, 4], [0, 0, 0, 4], [0, 0, 4, 2]]
         );
-
         app.move_nums(Direction::Left);
         assert_eq!(
             app.grid.cells,
             [[2, 8, 0, 0], [8, 16, 2, 4], [4, 0, 0, 0], [4, 2, 0, 0]]
         );
-
         app.move_nums(Direction::Right);
         assert_eq!(
             app.grid.cells,
             [[0, 0, 2, 8], [8, 16, 2, 4], [0, 0, 0, 4], [0, 0, 4, 2]]
         );
-
         app.move_nums(Direction::Up);
         assert_eq!(
             app.grid.cells,
             [[8, 16, 4, 8], [0, 0, 4, 8], [0, 0, 0, 2], [0, 0, 0, 0]]
         );
-
         app.move_nums(Direction::Down);
         assert_eq!(
             app.grid.cells,
             [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 16], [8, 16, 8, 2]]
         );
-
         app.move_nums(Direction::Up);
         assert_eq!(
             app.grid.cells,
             [[8, 16, 8, 16], [0, 0, 0, 2], [0, 0, 0, 0], [0, 0, 0, 0]]
         );
-
         app.move_nums(Direction::Down);
         assert_eq!(
             app.grid.cells,
@@ -321,7 +328,6 @@ mod tests {
     fn rows_move_right() {
         let mut app = build_app_default();
         app.move_nums(Direction::Right);
-
         assert_eq!(
             app.grid.cells,
             [[0, 0, 0, 0], [0, 0, 0, 4], [0, 0, 0, 2], [0, 0, 0, 0]]
@@ -338,7 +344,6 @@ mod tests {
     #[test]
     fn rows_move_up() {
         let mut app = build_app_default();
-
         assert_eq!(
             merge_row_vertical(&mut app, Direction::Up),
             Grid {
@@ -350,7 +355,6 @@ mod tests {
     #[test]
     fn rows_move_down() {
         let mut app = build_app_default();
-
         assert_eq!(
             merge_row_vertical(&mut app, Direction::Down),
             Grid {
