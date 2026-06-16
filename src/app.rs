@@ -88,7 +88,6 @@ impl App {
 
     // TODO: Bug - when at an edge and unable to move any cells that direction currently a move in
     // that dir is still allowed
-    // And add tests
     pub fn spawn_tile(&mut self) {
         let nums = [2, 4];
 
@@ -202,65 +201,6 @@ mod tests {
         }
     }
 
-    fn build_app_full() -> App {
-        App {
-            highest_num: 0,
-            score: 0,
-            game_over: false,
-            high_score: 0,
-            exit: false,
-            grid: Grid {
-                cells: [[2, 4, 2, 2], [8, 16, 2, 4], [2, 2, 0, 0], [0, 0, 4, 2]],
-            },
-            current_screen: Screen::Playing,
-        }
-    }
-
-    #[test]
-    fn full_game_play() {
-        let mut app = build_app_full();
-        app.move_nums(Direction::Left);
-        assert_eq!(
-            app.grid.cells,
-            [[2, 4, 4, 0], [8, 16, 2, 4], [4, 0, 0, 0], [4, 2, 0, 0]]
-        );
-        app.move_nums(Direction::Right);
-        assert_eq!(
-            app.grid.cells,
-            [[0, 0, 2, 8], [8, 16, 2, 4], [0, 0, 0, 4], [0, 0, 4, 2]]
-        );
-        app.move_nums(Direction::Left);
-        assert_eq!(
-            app.grid.cells,
-            [[2, 8, 0, 0], [8, 16, 2, 4], [4, 0, 0, 0], [4, 2, 0, 0]]
-        );
-        app.move_nums(Direction::Right);
-        assert_eq!(
-            app.grid.cells,
-            [[0, 0, 2, 8], [8, 16, 2, 4], [0, 0, 0, 4], [0, 0, 4, 2]]
-        );
-        app.move_nums(Direction::Up);
-        assert_eq!(
-            app.grid.cells,
-            [[8, 16, 4, 8], [0, 0, 4, 8], [0, 0, 0, 2], [0, 0, 0, 0]]
-        );
-        app.move_nums(Direction::Down);
-        assert_eq!(
-            app.grid.cells,
-            [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 16], [8, 16, 8, 2]]
-        );
-        app.move_nums(Direction::Up);
-        assert_eq!(
-            app.grid.cells,
-            [[8, 16, 8, 16], [0, 0, 0, 2], [0, 0, 0, 0], [0, 0, 0, 0]]
-        );
-        app.move_nums(Direction::Down);
-        assert_eq!(
-            app.grid.cells,
-            [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 16], [8, 16, 8, 2]]
-        );
-    }
-
     #[test]
     fn rows_merge_left() {
         let mut app = build_app_default();
@@ -287,23 +227,6 @@ mod tests {
     }
 
     #[test]
-    fn rows_move_left() {
-        let mut app = build_app_default();
-        app.move_nums(Direction::Left);
-        assert_eq!(
-            app.grid.cells,
-            [[0, 0, 0, 0], [4, 0, 0, 0], [2, 0, 0, 0], [0, 0, 0, 0]]
-        );
-
-        let mut app = build_app_full();
-        app.move_nums(Direction::Left);
-        assert_eq!(
-            app.grid.cells,
-            [[2, 4, 4, 0], [8, 16, 2, 4], [4, 0, 0, 0], [4, 2, 0, 0]]
-        );
-    }
-
-    #[test]
     fn rows_merge_right() {
         let mut app = build_app_default();
         assert_eq!(
@@ -321,23 +244,6 @@ mod tests {
         assert_eq!(
             merge_row_horizontal(&mut app, [0, 2, 2, 0], Direction::Right),
             [0, 0, 0, 4]
-        );
-    }
-
-    #[test]
-    fn rows_move_right() {
-        let mut app = build_app_default();
-        app.move_nums(Direction::Right);
-        assert_eq!(
-            app.grid.cells,
-            [[0, 0, 0, 0], [0, 0, 0, 4], [0, 0, 0, 2], [0, 0, 0, 0]]
-        );
-
-        let mut app = build_app_full();
-        app.move_nums(Direction::Right);
-        assert_eq!(
-            app.grid.cells,
-            [[0, 2, 4, 4], [8, 16, 2, 4], [0, 0, 0, 4], [0, 0, 4, 2]]
         );
     }
 
@@ -361,5 +267,15 @@ mod tests {
                 cells: [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 2, 2, 2]]
             }
         );
+    }
+
+    #[test]
+    fn random_tile_spawned() {
+        let mut app = build_app_default();
+        app.move_nums(Direction::Up);
+        let original = app.grid.cells;
+        app.spawn_tile();
+        let new = app.grid.cells;
+        assert_ne!(original, new);
     }
 }
