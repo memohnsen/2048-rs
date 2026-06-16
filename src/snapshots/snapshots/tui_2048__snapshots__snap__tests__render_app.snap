@@ -21,4 +21,4 @@ expression: terminal.backend()
 "┃│                  ││                 ││                  ││                 │┃"
 "┃│                  ││                 ││                  ││                 │┃"
 "┃└──────────────────┘└─────────────────┘└──────────────────┘└─────────────────┘┃"
-"┗━━━━━━━━━━━━━ Move <hjkl> New Game <n> High Scores <s>  Quit <q> ━━━━━━━━━━━━━┛"
+"┗━━━━━━ Move <hjkl or Arrow Keys> New Game <n> High Scores <s>  Quit <q> ━━━━━━┛"

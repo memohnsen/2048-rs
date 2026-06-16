@@ -1,6 +1,6 @@
 use rand::{
     distr::{Bernoulli, Distribution},
-    random_range, rng, thread_rng,
+    random_range, rng,
 };
 
 use crate::ui::Grid;
@@ -53,6 +53,8 @@ impl App {
         self.current_screen = Screen::Playing;
     }
 
+    // TODO: Bug - when at an edge and unable to move any cells that direction currently a move in
+    // that dir is still allowed
     pub fn move_nums(&mut self, direction: Direction) {
         match direction {
             Direction::Up => {
@@ -86,8 +88,9 @@ impl App {
         }
     }
 
-    // TODO: Bug - when at an edge and unable to move any cells that direction currently a move in
-    // that dir is still allowed
+    /// Takes in self and mutates it to add a 2 or a 4, with the program weighting more to the 2
+    /// The new tile is spawned in a random 0 location after the move has happened, based on the
+    /// coordinates of 0 that we save during iteration
     pub fn spawn_tile(&mut self) {
         let nums = [2, 4];
 
@@ -107,6 +110,11 @@ impl App {
                     zero_coordinates.push((row_index, col_index));
                 }
             }
+        }
+
+        if zero_coordinates.is_empty() {
+            self.game_over = true;
+            return self.current_screen = Screen::GameOver;
         }
 
         let rand_coordinate = random_range(0..=zero_coordinates.len() - 1);
@@ -187,7 +195,7 @@ fn merge_row_vertical(app: &mut App, direction: Direction) -> Grid {
 mod tests {
     use super::*;
 
-    fn build_app_default() -> App {
+    fn build_app() -> App {
         App {
             highest_num: 0,
             score: 0,
@@ -203,7 +211,7 @@ mod tests {
 
     #[test]
     fn rows_merge_left() {
-        let mut app = build_app_default();
+        let mut app = build_app();
         assert_eq!(
             merge_row_horizontal(&mut app, [0, 2, 4, 8], Direction::Left),
             [2, 4, 8, 0]
@@ -228,7 +236,7 @@ mod tests {
 
     #[test]
     fn rows_merge_right() {
-        let mut app = build_app_default();
+        let mut app = build_app();
         assert_eq!(
             merge_row_horizontal(&mut app, [0, 2, 4, 8], Direction::Right),
             [0, 2, 4, 8]
@@ -249,7 +257,7 @@ mod tests {
 
     #[test]
     fn rows_move_up() {
-        let mut app = build_app_default();
+        let mut app = build_app();
         assert_eq!(
             merge_row_vertical(&mut app, Direction::Up),
             Grid {
@@ -260,7 +268,7 @@ mod tests {
 
     #[test]
     fn rows_move_down() {
-        let mut app = build_app_default();
+        let mut app = build_app();
         assert_eq!(
             merge_row_vertical(&mut app, Direction::Down),
             Grid {
@@ -271,7 +279,7 @@ mod tests {
 
     #[test]
     fn random_tile_spawned() {
-        let mut app = build_app_default();
+        let mut app = build_app();
         app.move_nums(Direction::Up);
         let original = app.grid.cells;
         app.spawn_tile();
