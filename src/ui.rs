@@ -24,6 +24,7 @@ impl Widget for &App {
                 "<q> ".blue().bold(),
             ]),
             Screen::GameOver => Line::from(vec![]),
+            Screen::Scores => Line::from(vec![]),
         };
         let block = Block::bordered()
             .title(title.centered().bold())
@@ -110,6 +111,7 @@ pub fn get_bg_colors(num: String) -> Color {
     }
 }
 
+// TODO: center nums in block
 impl Widget for &Grid {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let col_constraints = (0..4).map(|_| Constraint::Length(40));

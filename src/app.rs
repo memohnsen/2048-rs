@@ -3,11 +3,12 @@ use rand::{
     random_range, rng,
 };
 
-use crate::ui::Grid;
+use crate::{app::Screen::Scores, ui::Grid};
 
 pub struct App {
     pub highest_num: u8,
     pub score: u32,
+    pub showing_score: bool,
     pub game_over: bool,
     pub high_score: u32,
     pub exit: bool,
@@ -15,9 +16,11 @@ pub struct App {
     pub current_screen: Screen,
 }
 
+#[derive(PartialEq)]
 pub enum Screen {
     Playing,
     GameOver,
+    Scores,
 }
 
 #[derive(PartialEq, Clone)]
@@ -34,6 +37,7 @@ impl Default for App {
             highest_num: 0,
             score: 0,
             game_over: false,
+            showing_score: false,
             high_score: 0,
             exit: false,
             grid: Grid {
@@ -126,8 +130,13 @@ impl App {
 
     /// TODO: need to wire up scores to be saved in a .txt as "date score highest_num"
     /// access file and show in popup sorted by score
-    pub fn show_scores(&mut self) {
-        todo!()
+    pub fn toggle_scores(&mut self) {
+        self.showing_score = !self.showing_score;
+        if self.current_screen == Screen::Scores {
+            self.current_screen = Screen::Playing
+        } else {
+            self.current_screen = Screen::Scores
+        };
     }
 
     pub fn exit(&mut self) {
@@ -200,6 +209,7 @@ mod tests {
             highest_num: 0,
             score: 0,
             game_over: false,
+            showing_score: false,
             high_score: 0,
             exit: false,
             grid: Grid {
