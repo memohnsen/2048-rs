@@ -37,6 +37,6 @@ jobs:
     - name: Upload Binaries to GitHub Release
       uses: houseabsolute/actions-rust-release@v0
       with:
-        executable-name: tui_2048
+        executable-name: tui-2048
         target: ${{ matrix.target }}
         changes-file: "Changes.md"
