@@ -129,9 +129,6 @@ pub fn render_game_over_popup(frame: &mut Frame, app: &App) {
     frame.render_widget(paragraph, centered_area);
 }
 
-// TODO:
-// 1. allow this to be scrollable with jk to go through all results
-// 2. add ability to change sorting between score and date
 pub fn render_scores_popup(frame: &mut Frame) {
     let area = frame.area();
 

@@ -62,15 +62,27 @@ impl App {
         self.current_screen = Screen::Playing;
     }
 
-    // TODO: Bug - when at an edge and unable to move any cells that direction currently a move in
-    // that dir is still allowed
     pub fn move_nums(&mut self, direction: Direction) {
         match direction {
             Direction::Up => {
-                self.grid = merge_row_vertical(self, Direction::Up);
+                let new = merge_row_vertical(self, Direction::Up);
+                if self.grid == new {
+                    self.grid = merge_row_vertical(self, Direction::Up);
+                } else {
+                    self.grid = merge_row_vertical(self, Direction::Up);
+                    self.spawn_tile();
+                    self.update_highest_num();
+                }
             }
             Direction::Down => {
-                self.grid = merge_row_vertical(self, Direction::Down);
+                let new = merge_row_vertical(self, Direction::Down);
+                if self.grid == new {
+                    self.grid = merge_row_vertical(self, Direction::Down);
+                } else {
+                    self.grid = merge_row_vertical(self, Direction::Down);
+                    self.spawn_tile();
+                    self.update_highest_num();
+                }
             }
             Direction::Left => {
                 let mut cells = self.grid.cells;
@@ -79,7 +91,13 @@ impl App {
                     *row = merge_row_horizontal(self, *row, Direction::Left)
                 }
 
-                self.grid.cells = cells;
+                if self.grid.cells == cells {
+                    self.grid.cells = cells;
+                } else {
+                    self.grid.cells = cells;
+                    self.spawn_tile();
+                    self.update_highest_num();
+                }
             }
             Direction::Right => {
                 let mut cells = self.grid.cells;
@@ -88,12 +106,15 @@ impl App {
                     *row = merge_row_horizontal(self, *row, Direction::Right)
                 }
 
-                self.grid.cells = cells;
+                if self.grid.cells == cells {
+                    self.grid.cells = cells;
+                } else {
+                    self.grid.cells = cells;
+                    self.spawn_tile();
+                    self.update_highest_num();
+                }
             }
         }
-
-        self.spawn_tile();
-        self.update_highest_num();
     }
 
     /// Takes in self and mutates it to add a 2 or a 4, with the program weighting more to the 2
