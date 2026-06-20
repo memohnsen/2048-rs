@@ -243,10 +243,10 @@ pub fn read_scores_file(path: PathBuf) -> String {
 }
 
 pub fn write_scores_to_file(app: &mut App, path: PathBuf) -> Result<()> {
-    if let Some(parent) = path.parent() {
-        if !parent.as_os_str().is_empty() {
-            fs::create_dir_all(parent)?;
-        }
+    if let Some(parent) = path.parent()
+        && !parent.as_os_str().is_empty()
+    {
+        fs::create_dir_all(parent)?;
     }
 
     if !path.exists() {
