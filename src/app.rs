@@ -63,10 +63,16 @@ impl App {
     }
 
     pub fn move_nums(&mut self, direction: Direction) {
+        let grid: Vec<u32> = self.grid.cells.iter().flatten().cloned().collect();
+
         match direction {
             Direction::Up => {
                 let new = merge_row_vertical(self, Direction::Up);
-                if self.grid == new {
+
+                if self.grid == new && !grid.contains(&0) {
+                    self.game_over = true;
+                    self.current_screen = Screen::GameOver;
+                } else if self.grid == new {
                     self.grid = merge_row_vertical(self, Direction::Up);
                 } else {
                     self.grid = merge_row_vertical(self, Direction::Up);
@@ -76,7 +82,11 @@ impl App {
             }
             Direction::Down => {
                 let new = merge_row_vertical(self, Direction::Down);
-                if self.grid == new {
+
+                if self.grid == new && !grid.contains(&0) {
+                    self.game_over = true;
+                    self.current_screen = Screen::GameOver;
+                } else if self.grid == new {
                     self.grid = merge_row_vertical(self, Direction::Down);
                 } else {
                     self.grid = merge_row_vertical(self, Direction::Down);
@@ -91,7 +101,10 @@ impl App {
                     *row = merge_row_horizontal(self, *row, Direction::Left)
                 }
 
-                if self.grid.cells == cells {
+                if self.grid.cells == cells && !grid.contains(&0) {
+                    self.game_over = true;
+                    self.current_screen = Screen::GameOver;
+                } else if self.grid.cells == cells {
                     self.grid.cells = cells;
                 } else {
                     self.grid.cells = cells;
@@ -106,7 +119,10 @@ impl App {
                     *row = merge_row_horizontal(self, *row, Direction::Right)
                 }
 
-                if self.grid.cells == cells {
+                if self.grid.cells == cells && !grid.contains(&0) {
+                    self.game_over = true;
+                    self.current_screen = Screen::GameOver;
+                } else if self.grid.cells == cells {
                     self.grid.cells = cells;
                 } else {
                     self.grid.cells = cells;
@@ -139,11 +155,6 @@ impl App {
                     zero_coordinates.push((row_index, col_index));
                 }
             }
-        }
-
-        if zero_coordinates.is_empty() {
-            self.game_over = true;
-            return self.current_screen = Screen::GameOver;
         }
 
         let rand_coordinate = random_range(0..=zero_coordinates.len() - 1);
