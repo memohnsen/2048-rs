@@ -83,7 +83,10 @@ pub fn get_highest_score(path: PathBuf) -> String {
 mod tests {
     use std::fs;
 
-    use crate::{app::write_scores_to_file, ui::grid::Grid};
+    use crate::{
+        app::{GameStyle, write_scores_to_file},
+        ui::grid::Grid,
+    };
 
     use super::*;
 
@@ -99,6 +102,7 @@ mod tests {
                 cells: [[0, 0, 0, 0], [0, 0, 2, 2], [0, 2, 0, 0], [0, 0, 0, 0]],
             },
             current_screen: Screen::Playing,
+            game_style: GameStyle::Normal,
         }
     }
 
@@ -115,7 +119,7 @@ mod tests {
         write_scores_to_file(&mut app, path.clone()).unwrap();
 
         let expected = format!(
-            "Date Score Highest Num\n{} 200 0\n",
+            "Date Score Highest Num Game Style\n{} 200 0 normal\n",
             chrono::Local::now().format("%Y-%m-%d %H:%M"),
         );
         let contents = read_scores_file(path);

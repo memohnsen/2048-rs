@@ -1,6 +1,8 @@
+use core::fmt;
 use std::fs::{self, File};
 use std::io::Write;
 use std::path::PathBuf;
+use std::str::FromStr;
 use std::{fs::OpenOptions, io::Result};
 
 use rand::{
@@ -19,9 +21,45 @@ pub struct App {
     pub exit: bool,
     pub grid: Grid,
     pub current_screen: Screen,
+    pub game_style: GameStyle,
 }
 
-#[derive(PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GameStyle {
+    Normal,
+    Timed5,
+    Timed10,
+}
+
+impl GameStyle {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            GameStyle::Normal => "normal",
+            GameStyle::Timed5 => "timed5",
+            GameStyle::Timed10 => "timed10",
+        }
+    }
+}
+
+impl fmt::Display for GameStyle {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+impl FromStr for GameStyle {
+    type Err = ();
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        match s {
+            "normal" => Ok(GameStyle::Normal),
+            "timed5" => Ok(GameStyle::Timed5),
+            "timed10" => Ok(GameStyle::Timed10),
+            _ => Err(()),
+        }
+    }
+}
+
+#[derive(PartialEq, Debug)]
 pub enum Screen {
     Playing,
     GameOver,
@@ -49,6 +87,7 @@ impl Default for App {
                 cells: [[0, 0, 0, 0], [0, 0, 2, 0], [0, 2, 0, 0], [0, 0, 0, 0]],
             },
             current_screen: Screen::Playing,
+            game_style: GameStyle::Normal,
         }
     }
 }
@@ -60,6 +99,7 @@ impl App {
         self.highest_num = 0;
         self.game_over = false;
         self.current_screen = Screen::Playing;
+        self.game_style = GameStyle::Normal;
     }
 
     pub fn move_nums(&mut self, direction: Direction) {
@@ -262,14 +302,18 @@ pub fn write_scores_to_file(app: &mut App, path: PathBuf) -> Result<()> {
 
     if !path.exists() {
         let mut file = File::create(&path)?;
-        writeln!(file, "Date Score Highest Num")?;
+        writeln!(file, "Date Score Highest Num Game Style")?;
     }
 
     let mut file = OpenOptions::new().append(true).open(path)?;
 
     let now = chrono::Local::now().format("%Y-%m-%d %H:%M").to_string();
 
-    writeln!(file, "{} {} {}", now, app.score, app.highest_num)?;
+    writeln!(
+        file,
+        "{} {} {} {}",
+        now, app.score, app.highest_num, app.game_style
+    )?;
     Ok(())
 }
 
@@ -289,6 +333,28 @@ mod tests {
                 cells: [[0, 0, 0, 0], [0, 0, 2, 2], [0, 2, 0, 0], [0, 0, 0, 0]],
             },
             current_screen: Screen::Playing,
+            game_style: GameStyle::Normal,
+        }
+    }
+
+    fn build_app_ended() -> App {
+        App {
+            highest_num: 0,
+            score: 0,
+            game_over: false,
+            showing_score: false,
+            high_score: 0,
+            exit: false,
+            grid: Grid {
+                cells: [
+                    [2048, 1024, 512, 256],
+                    [128, 64, 32, 16],
+                    [8, 4, 2, 2048],
+                    [1024, 512, 256, 128],
+                ],
+            },
+            current_screen: Screen::Playing,
+            game_style: GameStyle::Normal,
         }
     }
 
@@ -380,7 +446,7 @@ mod tests {
         let contents = read_scores_file(path.clone());
 
         let expected = format!(
-            "Date Score Highest Num\n{} 0 0\n",
+            "Date Score Highest Num Game Style\n{} 0 0 normal\n",
             chrono::Local::now().format("%Y-%m-%d %H:%M"),
         );
 
@@ -390,5 +456,12 @@ mod tests {
 
         let contents = read_scores_file(path);
         assert_eq!(contents, "You have no high scores saved yet".to_string());
+    }
+
+    #[test]
+    fn game_ends() {
+        let mut app = build_app_ended();
+        app.move_nums(Direction::Up);
+        assert_eq!(app.current_screen, Screen::GameOver);
     }
 }

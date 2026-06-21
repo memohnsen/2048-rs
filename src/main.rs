@@ -5,10 +5,17 @@ use ratatui::{DefaultTerminal, Frame};
 use tui_2048::{
     SCORES_PATH,
     app::{App, Direction, Screen, write_scores_to_file},
+    cli::run::run_command,
     ui::grid::{render_game_over_popup, render_scores_popup},
 };
 
 fn main() -> io::Result<()> {
+    let argv: Vec<String> = std::env::args().skip(1).collect();
+    if !argv.is_empty() {
+        run_command(argv);
+        return Ok(());
+    }
+
     let mut terminal = ratatui::init();
     let mut app = App::default();
     run(&mut app, &mut terminal)
@@ -33,6 +40,7 @@ pub fn run(app: &mut App, terminal: &mut DefaultTerminal) -> io::Result<()> {
         })?;
         handle_events(app)?;
     }
+    ratatui::restore();
     Ok(())
 }
 
