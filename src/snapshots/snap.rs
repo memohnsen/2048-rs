@@ -34,18 +34,18 @@ mod tests {
         let vertical_layout = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
-                Constraint::Percentage(25),
                 Constraint::Percentage(50),
-                Constraint::Percentage(25),
+                Constraint::Percentage(50),
+                Constraint::Percentage(50),
             ])
             .split(area);
 
         let horizontal_layout = Layout::default()
             .direction(Direction::Horizontal)
             .constraints([
-                Constraint::Percentage(20),
+                Constraint::Percentage(40),
                 Constraint::Percentage(60),
-                Constraint::Percentage(20),
+                Constraint::Percentage(40),
             ])
             .split(vertical_layout[1]);
 
@@ -62,7 +62,7 @@ mod tests {
             std::env::set_var("HOME", env!("CARGO_MANIFEST_DIR"));
         }
         let app = build_app();
-        let mut terminal = Terminal::new(TestBackend::new(80, 20)).unwrap();
+        let mut terminal = Terminal::new(TestBackend::new(100, 40)).unwrap();
         terminal
             .draw(|frame| frame.render_widget(&app, frame.area()))
             .unwrap();
@@ -75,7 +75,7 @@ mod tests {
             std::env::set_var("HOME", env!("CARGO_MANIFEST_DIR"));
         }
         let mut app = build_app();
-        let mut terminal = Terminal::new(TestBackend::new(80, 20)).unwrap();
+        let mut terminal = Terminal::new(TestBackend::new(100, 40)).unwrap();
         terminal
             .draw(|frame| {
                 frame.render_widget(&app, frame.area());
@@ -96,7 +96,7 @@ mod tests {
             std::env::set_var("HOME", env!("CARGO_MANIFEST_DIR"));
         }
         let app = build_app();
-        let mut terminal = Terminal::new(TestBackend::new(80, 20)).unwrap();
+        let mut terminal = Terminal::new(TestBackend::new(100, 40)).unwrap();
         terminal
             .draw(|frame| {
                 frame.render_widget(&app, frame.area());
@@ -117,7 +117,7 @@ mod tests {
             std::env::set_var("HOME", env!("CARGO_MANIFEST_DIR"));
         }
         let app = build_app();
-        let mut terminal = Terminal::new(TestBackend::new(80, 20)).unwrap();
+        let mut terminal = Terminal::new(TestBackend::new(100, 40)).unwrap();
         terminal
             .draw(|frame| {
                 frame.render_widget(&app, frame.area());
@@ -138,7 +138,8 @@ mod tests {
             std::env::set_var("HOME", env!("CARGO_MANIFEST_DIR"));
         }
         let mut app = build_app();
-        let mut terminal = Terminal::new(TestBackend::new(80, 20)).unwrap();
+        let mut terminal = Terminal::new(TestBackend::new(100, 40)).unwrap();
+
         terminal
             .draw(|frame| {
                 let mut cells = app.grid.cells;
@@ -158,7 +159,7 @@ mod tests {
             std::env::set_var("HOME", env!("CARGO_MANIFEST_DIR"));
         }
         let mut app = build_app();
-        let mut terminal = Terminal::new(TestBackend::new(80, 20)).unwrap();
+        let mut terminal = Terminal::new(TestBackend::new(100, 40)).unwrap();
         terminal
             .draw(|frame| {
                 let mut cells = app.grid.cells;
@@ -178,7 +179,7 @@ mod tests {
             std::env::set_var("HOME", env!("CARGO_MANIFEST_DIR"));
         }
         let mut app = build_app();
-        let mut terminal = Terminal::new(TestBackend::new(80, 20)).unwrap();
+        let mut terminal = Terminal::new(TestBackend::new(100, 40)).unwrap();
         terminal
             .draw(|frame| {
                 app.grid = merge_row_vertical(&mut app, crate::app::Direction::Up);
@@ -194,7 +195,7 @@ mod tests {
             std::env::set_var("HOME", env!("CARGO_MANIFEST_DIR"));
         }
         let mut app = build_app();
-        let mut terminal = Terminal::new(TestBackend::new(80, 20)).unwrap();
+        let mut terminal = Terminal::new(TestBackend::new(100, 40)).unwrap();
         terminal
             .draw(|frame| {
                 app.grid = merge_row_vertical(&mut app, crate::app::Direction::Down);

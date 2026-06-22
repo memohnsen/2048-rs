@@ -61,7 +61,7 @@ impl Widget for &App {
                 " | High Score: ".into(),
                 get_highest_score(path).yellow(),
                 " | Time Remaining: ".into(),
-                self.time_remaining_seconds.yellow(),
+                get_time_remaining(self).yellow(),
             ])]),
         };
 
@@ -73,9 +73,11 @@ impl Widget for &App {
     }
 }
 
-pub fn get_time_remaining() -> String {
-    todo!()
-    // get time and convert to string MM:SS
+pub fn get_time_remaining(app: &App) -> String {
+    let minutes = app.time_remaining_seconds / 60;
+    let seconds = app.time_remaining_seconds % 60;
+
+    format!("{minutes}:{seconds:02}")
 }
 
 pub fn get_highest_score(path: PathBuf) -> String {
