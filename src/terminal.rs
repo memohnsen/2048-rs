@@ -24,7 +24,7 @@ pub fn run(app: &mut App, terminal: &mut DefaultTerminal) -> io::Result<()> {
             }
 
             if app.showing_score {
-                render_scores_popup(frame);
+                render_scores_popup(frame, app);
             }
         })?;
         if app.game_over {
@@ -58,6 +58,7 @@ pub fn handle_events(app: &mut App) -> io::Result<()> {
     Ok(())
 }
 
+// TODO: tests for all keycodes
 pub fn handle_key_event(app: &mut App, key_event: KeyEvent) {
     match app.current_screen {
         Screen::Playing => match key_event.code {
@@ -89,23 +90,11 @@ pub fn handle_key_event(app: &mut App, key_event: KeyEvent) {
             _ => {}
         },
         Screen::Scores => match key_event.code {
-            KeyCode::Char('q') => app.exit(),
             KeyCode::Char('s') => app.toggle_scores(),
-            KeyCode::Char('a') => {
-                todo!() // all scores
-            }
-            KeyCode::Char('f') => {
-                todo!() // timed 5 scores
-            }
-            KeyCode::Char('t') => {
-                todo!() // timed 10 scores
-            }
-            KeyCode::Char('d') => {
-                todo!() // sort by date
-            }
-            KeyCode::Char('h') => {
-                todo!() // sort by high to low
-            }
+            KeyCode::Char('a') => app.scores_game = None,
+            KeyCode::Char('n') => app.scores_game = Some(GameStyle::Normal),
+            KeyCode::Char('f') => app.scores_game = Some(GameStyle::Timed5),
+            KeyCode::Char('t') => app.scores_game = Some(GameStyle::Timed10),
             _ => {}
         },
         Screen::GameStyle => match key_event.code {

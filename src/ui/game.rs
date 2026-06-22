@@ -73,6 +73,7 @@ impl Widget for &App {
     }
 }
 
+// TODO: tests
 pub fn get_time_remaining(app: &App) -> String {
     let minutes = app.time_remaining_seconds / 60;
     let seconds = app.time_remaining_seconds % 60;
@@ -125,6 +126,7 @@ mod tests {
             game_style_index: 0,
             time_remaining_seconds: 0,
             game_start_time: None,
+            scores_game: None,
         }
     }
 

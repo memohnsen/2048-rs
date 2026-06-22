@@ -10,7 +10,7 @@ use ratatui::{
 
 use crate::{
     SCORES_PATH,
-    app::{App, read_scores_file},
+    app::{App, filter_sort_scores, read_scores_file},
 };
 
 pub fn render_game_over_popup(frame: &mut Frame, app: &App) {
@@ -33,24 +33,27 @@ pub fn render_game_over_popup(frame: &mut Frame, app: &App) {
     frame.render_widget(paragraph, centered_area);
 }
 
-pub fn render_scores_popup(frame: &mut Frame) {
+// TODO: insta tests
+pub fn render_scores_popup(frame: &mut Frame, app: &App) {
     let area = frame.area();
 
     let controls = Line::from(vec![
-        " New Game ".into(),
-        "<n>".blue().bold(),
         " Hide Scores ".into(),
         "<s> ".blue().bold(),
-        " Quit ".into(),
-        "<q> ".blue().bold(),
+        " All ".into(),
+        "<a>".blue().bold(),
+        " Normal Mode ".into(),
+        "<n>".blue().bold(),
+        " 5min Mode ".into(),
+        "<f>".blue().bold(),
+        " 10min Mode ".into(),
+        "<t>".blue().bold(),
     ]);
 
-    // TODO: add filtering option based on game type
-    // TODO: show top 10 only
     let popup_block = Block::bordered()
         .title("High Scores")
         .title_bottom(controls);
-    let centered_area = area.centered(Constraint::Percentage(60), Constraint::Percentage(20));
+    let centered_area = area.centered(Constraint::Percentage(70), Constraint::Percentage(25));
     frame.render_widget(Clear, centered_area);
 
     let home = std::env::var("HOME").unwrap_or("~".to_string());
@@ -59,7 +62,8 @@ pub fn render_scores_popup(frame: &mut Frame) {
     path.push(SCORES_PATH);
 
     let scores = read_scores_file(path);
-    let paragraph = Paragraph::new(scores).block(popup_block);
+    let filtered_scores = filter_sort_scores(scores, app);
+    let paragraph = Paragraph::new(filtered_scores).block(popup_block);
     frame.render_widget(paragraph, centered_area);
 }
 

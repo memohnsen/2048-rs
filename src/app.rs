@@ -1,4 +1,5 @@
 use core::fmt;
+use std::cmp::Reverse;
 use std::fs::{self, File};
 use std::io::Write;
 use std::path::PathBuf;
@@ -27,6 +28,7 @@ pub struct App {
     pub game_style_index: usize,
     pub time_remaining_seconds: u64,
     pub game_start_time: Option<Instant>,
+    pub scores_game: Option<GameStyle>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -98,6 +100,7 @@ impl Default for App {
             game_style_index: 0,
             game_start_time: None,
             time_remaining_seconds: 0,
+            scores_game: None,
         }
     }
 }
@@ -354,6 +357,33 @@ pub fn read_scores_file(path: PathBuf) -> String {
     }
 }
 
+// TODO: tests
+pub fn filter_sort_scores(scores: String, app: &App) -> String {
+    let mut lines: Vec<String> = scores
+        .lines()
+        .skip(1)
+        .filter(|line| {
+            let game_type = line.split_whitespace().nth(4).unwrap_or("normal");
+            match app.scores_game {
+                Some(GameStyle::Normal) => game_type == "normal",
+                Some(GameStyle::Timed5) => game_type == "timed5",
+                Some(GameStyle::Timed10) => game_type == "timed10",
+                None => true,
+            }
+        })
+        .map(|line| line.to_string())
+        .collect();
+
+    lines.sort_by_key(|line| {
+        let score_str = line.split_whitespace().nth(2).unwrap_or("0");
+        Reverse(score_str.parse::<u64>().unwrap_or(0))
+    });
+
+    let header = "Date | Score | Highest | Style \n".to_string();
+
+    header + &lines[..10.min(lines.len())].join("\n")
+}
+
 pub fn write_scores_to_file(app: &mut App, path: PathBuf) -> Result<()> {
     if let Some(parent) = path.parent()
         && !parent.as_os_str().is_empty()
@@ -399,6 +429,7 @@ mod tests {
             game_style_index: 0,
             time_remaining_seconds: 0,
             game_start_time: None,
+            scores_game: None,
         }
     }
 
@@ -424,6 +455,7 @@ mod tests {
             game_style_index: 0,
             time_remaining_seconds: 0,
             game_start_time: None,
+            scores_game: None,
         }
     }
 

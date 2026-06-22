@@ -28,6 +28,7 @@ mod tests {
             game_style_index: 0,
             time_remaining_seconds: 0,
             game_start_time: None,
+            scores_game: None,
         }
     }
     fn get_centered_popup_area(area: Rect) -> Rect {
@@ -96,7 +97,7 @@ mod tests {
             std::env::set_var("HOME", env!("CARGO_MANIFEST_DIR"));
         }
         let app = build_app();
-        let mut terminal = Terminal::new(TestBackend::new(100, 40)).unwrap();
+        let mut terminal = Terminal::new(TestBackend::new(120, 40)).unwrap();
         terminal
             .draw(|frame| {
                 frame.render_widget(&app, frame.area());
@@ -105,7 +106,7 @@ mod tests {
 
                 frame.render_widget(ratatui::widgets::Clear, popup_area);
 
-                render_scores_popup(frame);
+                render_scores_popup(frame, &app);
             })
             .unwrap();
         assert_snapshot!(terminal.backend());
