@@ -77,7 +77,7 @@ pub fn run_command(command: Vec<String>) {
         "".to_string()
     };
 
-    match command[0].as_str() {
+    let _ = match command[0].as_str() {
         "scores" => Commands::Scores(subcommand).execute(),
         "new" => Commands::New(subcommand).execute(),
         "help" => Commands::Help.execute(),

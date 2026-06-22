@@ -76,7 +76,7 @@ pub fn get_bg_colors(num: String) -> Color {
 impl Widget for &Grid {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let col_constraints = (0..4).map(|_| Constraint::Length(40));
-        let row_constraints = (0..4).map(|_| Constraint::Length(10));
+        let row_constraints = (0..4).map(|_| Constraint::Length(20));
         let horizontal = Layout::horizontal(col_constraints).flex(ratatui::layout::Flex::Center);
         let vertical = Layout::vertical(row_constraints).flex(ratatui::layout::Flex::Center);
 
@@ -96,12 +96,14 @@ impl Widget for &Grid {
 
             let color = get_bg_colors(text.clone());
 
+            let vertical_space = cell.height.saturating_sub(3) / 2;
+
             Paragraph::new(text.bold().fg(Color::Black))
                 .block(
                     Block::bordered()
                         .fg(color)
                         .bg(color)
-                        .padding(Padding::vertical(3)),
+                        .padding(Padding::top(vertical_space)),
                 )
                 .centered()
                 .render(cell, buf);
