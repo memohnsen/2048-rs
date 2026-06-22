@@ -26,6 +26,8 @@ mod tests {
             game_style: GameStyle::Normal,
             chosen_game_style: true,
             game_style_index: 0,
+            time_remaining_seconds: 0,
+            game_start_time: None,
         }
     }
     fn get_centered_popup_area(area: Rect) -> Rect {

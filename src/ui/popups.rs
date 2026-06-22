@@ -45,8 +45,8 @@ pub fn render_scores_popup(frame: &mut Frame) {
         "<q> ".blue().bold(),
     ]);
 
-    // TODO: add jk scrolling to choose options here
     // TODO: add filtering option based on game type
+    // TODO: show top 10 only
     let popup_block = Block::bordered()
         .title("High Scores")
         .title_bottom(controls);

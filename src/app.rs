@@ -3,6 +3,7 @@ use std::fs::{self, File};
 use std::io::Write;
 use std::path::PathBuf;
 use std::str::FromStr;
+use std::time::Instant;
 use std::{fs::OpenOptions, io::Result};
 
 use rand::{
@@ -24,6 +25,8 @@ pub struct App {
     pub game_style: GameStyle,
     pub chosen_game_style: bool,
     pub game_style_index: usize,
+    pub time_remaining_seconds: u64,
+    pub game_start_time: Option<Instant>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -93,6 +96,8 @@ impl Default for App {
             game_style: GameStyle::Normal,
             chosen_game_style: false,
             game_style_index: 0,
+            game_start_time: None,
+            time_remaining_seconds: 0,
         }
     }
 }
@@ -105,6 +110,7 @@ impl App {
         self.game_over = false;
         self.current_screen = Screen::Playing;
         self.game_style = GameStyle::Normal;
+        self.chosen_game_style = true;
     }
 
     pub fn new_game_timed5(&mut self) {
@@ -114,6 +120,9 @@ impl App {
         self.game_over = false;
         self.current_screen = Screen::Playing;
         self.game_style = GameStyle::Timed5;
+        self.time_remaining_seconds = 300;
+        self.chosen_game_style = true;
+        self.game_start_time = Some(Instant::now());
     }
 
     pub fn new_game_timed10(&mut self) {
@@ -123,6 +132,35 @@ impl App {
         self.game_over = false;
         self.current_screen = Screen::Playing;
         self.game_style = GameStyle::Timed10;
+        self.time_remaining_seconds = 600;
+        self.chosen_game_style = true;
+        self.game_start_time = Some(Instant::now());
+    }
+
+    pub fn update_timer(&mut self) {
+        if let Some(start_time) = self.game_start_time {
+            let elapsed = start_time.elapsed().as_secs();
+
+            match self.game_style {
+                GameStyle::Normal => {}
+                GameStyle::Timed5 => {
+                    if elapsed >= 300 {
+                        self.time_remaining_seconds = 0;
+                        self.game_over = true;
+                    } else {
+                        self.time_remaining_seconds = 300 - elapsed;
+                    }
+                }
+                GameStyle::Timed10 => {
+                    if elapsed >= 600 {
+                        self.time_remaining_seconds = 0;
+                        self.game_over = true;
+                    } else {
+                        self.time_remaining_seconds = 600 - elapsed;
+                    }
+                }
+            }
+        }
     }
 
     pub fn move_nums(&mut self, direction: Direction) {
@@ -359,6 +397,8 @@ mod tests {
             game_style: GameStyle::Normal,
             chosen_game_style: true,
             game_style_index: 0,
+            time_remaining_seconds: 0,
+            game_start_time: None,
         }
     }
 
@@ -382,6 +422,8 @@ mod tests {
             game_style: GameStyle::Normal,
             chosen_game_style: true,
             game_style_index: 0,
+            time_remaining_seconds: 0,
+            game_start_time: None,
         }
     }
 

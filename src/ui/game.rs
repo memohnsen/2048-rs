@@ -61,7 +61,7 @@ impl Widget for &App {
                 " | High Score: ".into(),
                 get_highest_score(path).yellow(),
                 " | Time Remaining: ".into(),
-                get_time_remaining().yellow(),
+                self.time_remaining_seconds.yellow(),
             ])]),
         };
 
@@ -75,6 +75,7 @@ impl Widget for &App {
 
 pub fn get_time_remaining() -> String {
     todo!()
+    // get time and convert to string MM:SS
 }
 
 pub fn get_highest_score(path: PathBuf) -> String {
@@ -120,6 +121,8 @@ mod tests {
             game_style: GameStyle::Normal,
             chosen_game_style: true,
             game_style_index: 0,
+            time_remaining_seconds: 0,
+            game_start_time: None,
         }
     }
 
