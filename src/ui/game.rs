@@ -119,6 +119,7 @@ mod tests {
             current_screen: Screen::Playing,
             game_style: GameStyle::Normal,
             chosen_game_style: true,
+            game_style_index: 0,
         }
     }
 

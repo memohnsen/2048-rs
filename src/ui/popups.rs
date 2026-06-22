@@ -3,9 +3,9 @@ use std::path::PathBuf;
 use ratatui::{
     Frame,
     layout::Constraint,
-    style::Stylize,
+    style::{Color, Style, Stylize},
     text::Line,
-    widgets::{Block, Clear, Paragraph},
+    widgets::{Block, Clear, List, ListState, Paragraph},
 };
 
 use crate::{
@@ -68,19 +68,30 @@ pub fn render_game_style_popup(frame: &mut Frame, app: &mut App) {
 
     let controls = Line::from(vec![
         " Up ".into(),
-        "<k>".blue().bold(),
+        "<k / up>".blue().bold(),
         " Down ".into(),
-        "<j> ".blue().bold(),
+        "<j / down> ".blue().bold(),
         " Select ".into(),
         "<Enter> ".blue().bold(),
+        " Quit ".into(),
+        "<q> ".blue().bold(),
     ]);
 
-    // TODO: add jk scrolling to choose options here
     let popup_block = Block::bordered()
         .title("Choose your game mode")
         .title_bottom(controls);
+
     let centered_area = area.centered(Constraint::Percentage(60), Constraint::Percentage(20));
     frame.render_widget(Clear, centered_area);
-    let paragraph = Paragraph::new("Normal\nTimed 5min\nTimed 10min").block(popup_block);
-    frame.render_widget(paragraph, centered_area);
+
+    let items = vec!["Normal", "Timed 5min", "Timed 10min"];
+
+    let list = List::new(items)
+        .block(popup_block)
+        .highlight_style(Style::default().fg(Color::Blue))
+        .highlight_symbol(">> ");
+
+    let mut state = ListState::default();
+    state.select(Some(app.game_style_index));
+    frame.render_stateful_widget(list, centered_area, &mut state);
 }

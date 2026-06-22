@@ -78,13 +78,27 @@ pub fn handle_key_event(app: &mut App, key_event: KeyEvent) {
             _ => {}
         },
         Screen::GameStyle => match key_event.code {
-            KeyCode::Char('n') => app.new_game(),
-            KeyCode::Char('j') => {
-                todo!()
+            KeyCode::Char('j') | KeyCode::Down => {
+                if app.game_style_index < 2 {
+                    app.game_style_index += 1;
+                };
             }
-            KeyCode::Char('k') => {
-                todo!()
+            KeyCode::Char('k') | KeyCode::Up => {
+                if app.game_style_index > 0 {
+                    app.game_style_index -= 1;
+                };
             }
+            KeyCode::Enter => {
+                app.chosen_game_style = true;
+
+                match app.game_style_index {
+                    0 => app.new_game(),
+                    1 => app.new_game_timed5(),
+                    2 => app.new_game_timed10(),
+                    _ => {}
+                }
+            }
+            KeyCode::Char('q') => app.exit(),
             _ => {}
         },
     }

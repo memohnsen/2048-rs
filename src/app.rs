@@ -23,6 +23,7 @@ pub struct App {
     pub current_screen: Screen,
     pub game_style: GameStyle,
     pub chosen_game_style: bool,
+    pub game_style_index: usize,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -88,9 +89,10 @@ impl Default for App {
             grid: Grid {
                 cells: [[0, 0, 0, 0], [0, 0, 2, 0], [0, 2, 0, 0], [0, 0, 0, 0]],
             },
-            current_screen: Screen::Playing,
+            current_screen: Screen::GameStyle,
             game_style: GameStyle::Normal,
             chosen_game_style: false,
+            game_style_index: 0,
         }
     }
 }
@@ -356,6 +358,7 @@ mod tests {
             current_screen: Screen::Playing,
             game_style: GameStyle::Normal,
             chosen_game_style: true,
+            game_style_index: 0,
         }
     }
 
@@ -378,6 +381,7 @@ mod tests {
             current_screen: Screen::Playing,
             game_style: GameStyle::Normal,
             chosen_game_style: true,
+            game_style_index: 0,
         }
     }
 
