@@ -3,6 +3,7 @@ use std::fs::{self, File};
 use std::io::Write;
 use std::path::PathBuf;
 use std::str::FromStr;
+use std::time::Instant;
 use std::{fs::OpenOptions, io::Result};
 
 use rand::{
@@ -22,6 +23,10 @@ pub struct App {
     pub grid: Grid,
     pub current_screen: Screen,
     pub game_style: GameStyle,
+    pub chosen_game_style: bool,
+    pub game_style_index: usize,
+    pub time_remaining_seconds: u64,
+    pub game_start_time: Option<Instant>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -64,6 +69,7 @@ pub enum Screen {
     Playing,
     GameOver,
     Scores,
+    GameStyle,
 }
 
 #[derive(PartialEq, Clone)]
@@ -86,8 +92,12 @@ impl Default for App {
             grid: Grid {
                 cells: [[0, 0, 0, 0], [0, 0, 2, 0], [0, 2, 0, 0], [0, 0, 0, 0]],
             },
-            current_screen: Screen::Playing,
+            current_screen: Screen::GameStyle,
             game_style: GameStyle::Normal,
+            chosen_game_style: false,
+            game_style_index: 0,
+            game_start_time: None,
+            time_remaining_seconds: 0,
         }
     }
 }
@@ -100,6 +110,57 @@ impl App {
         self.game_over = false;
         self.current_screen = Screen::Playing;
         self.game_style = GameStyle::Normal;
+        self.chosen_game_style = true;
+    }
+
+    pub fn new_game_timed5(&mut self) {
+        self.grid.cells = [[0, 0, 0, 0], [0, 0, 2, 0], [0, 2, 0, 0], [0, 0, 0, 0]];
+        self.score = 0;
+        self.highest_num = 0;
+        self.game_over = false;
+        self.current_screen = Screen::Playing;
+        self.game_style = GameStyle::Timed5;
+        self.time_remaining_seconds = 300;
+        self.chosen_game_style = true;
+        self.game_start_time = Some(Instant::now());
+    }
+
+    pub fn new_game_timed10(&mut self) {
+        self.grid.cells = [[0, 0, 0, 0], [0, 0, 2, 0], [0, 2, 0, 0], [0, 0, 0, 0]];
+        self.score = 0;
+        self.highest_num = 0;
+        self.game_over = false;
+        self.current_screen = Screen::Playing;
+        self.game_style = GameStyle::Timed10;
+        self.time_remaining_seconds = 600;
+        self.chosen_game_style = true;
+        self.game_start_time = Some(Instant::now());
+    }
+
+    pub fn update_timer(&mut self) {
+        if let Some(start_time) = self.game_start_time {
+            let elapsed = start_time.elapsed().as_secs();
+
+            match self.game_style {
+                GameStyle::Normal => {}
+                GameStyle::Timed5 => {
+                    if elapsed >= 300 {
+                        self.time_remaining_seconds = 0;
+                        self.game_over = true;
+                    } else {
+                        self.time_remaining_seconds = 300 - elapsed;
+                    }
+                }
+                GameStyle::Timed10 => {
+                    if elapsed >= 600 {
+                        self.time_remaining_seconds = 0;
+                        self.game_over = true;
+                    } else {
+                        self.time_remaining_seconds = 600 - elapsed;
+                    }
+                }
+            }
+        }
     }
 
     pub fn move_nums(&mut self, direction: Direction) {
@@ -233,7 +294,7 @@ impl App {
 /// reader tracks what val we are reading from the nums vec, if there is a merge we skip past the
 /// next index so we dont double merge the same num
 /// writer goes contiguous through each index
-fn merge_row_horizontal(app: &mut App, row: [u32; 4], direction: Direction) -> [u32; 4] {
+pub fn merge_row_horizontal(app: &mut App, row: [u32; 4], direction: Direction) -> [u32; 4] {
     let mut nums: Vec<u32> = row.into_iter().filter(|&val| val != 0).collect();
     if direction == Direction::Right || direction == Direction::Down {
         nums.reverse();
@@ -263,7 +324,7 @@ fn merge_row_horizontal(app: &mut App, row: [u32; 4], direction: Direction) -> [
 
 /// Go through the whole Grid item from App and map the current grid to columns
 /// From there it's the same mutation as above where we mutate and reverse if needed
-fn merge_row_vertical(app: &mut App, direction: Direction) -> Grid {
+pub fn merge_row_vertical(app: &mut App, direction: Direction) -> Grid {
     let mut cells = [[0; 4]; 4];
 
     for (col_index, _) in cells.into_iter().enumerate() {
@@ -334,6 +395,10 @@ mod tests {
             },
             current_screen: Screen::Playing,
             game_style: GameStyle::Normal,
+            chosen_game_style: true,
+            game_style_index: 0,
+            time_remaining_seconds: 0,
+            game_start_time: None,
         }
     }
 
@@ -355,6 +420,10 @@ mod tests {
             },
             current_screen: Screen::Playing,
             game_style: GameStyle::Normal,
+            chosen_game_style: true,
+            game_style_index: 0,
+            time_remaining_seconds: 0,
+            game_start_time: None,
         }
     }
 
