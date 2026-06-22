@@ -45,6 +45,8 @@ pub fn render_scores_popup(frame: &mut Frame) {
         "<q> ".blue().bold(),
     ]);
 
+    // TODO: add jk scrolling to choose options here
+    // TODO: add filtering option based on game type
     let popup_block = Block::bordered()
         .title("High Scores")
         .title_bottom(controls);
@@ -73,6 +75,7 @@ pub fn render_game_style_popup(frame: &mut Frame, app: &mut App) {
         "<Enter> ".blue().bold(),
     ]);
 
+    // TODO: add jk scrolling to choose options here
     let popup_block = Block::bordered()
         .title("Choose your game mode")
         .title_bottom(controls);

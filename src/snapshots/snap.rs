@@ -1,11 +1,14 @@
 #[cfg(test)]
 mod tests {
     use insta::assert_snapshot;
+    use ratatui::layout::{Constraint, Direction, Layout, Rect};
     use ratatui::{Terminal, backend::TestBackend};
 
+    use crate::app::{merge_row_horizontal, merge_row_vertical};
+    use crate::ui::popups::{render_game_over_popup, render_scores_popup};
     use crate::{
         app::{App, GameStyle, Screen},
-        ui::grid::Grid,
+        ui::{grid::Grid, popups::render_game_style_popup},
     };
 
     fn build_app() -> App {
@@ -24,6 +27,27 @@ mod tests {
             chosen_game_style: true,
         }
     }
+    fn get_centered_popup_area(area: Rect) -> Rect {
+        let vertical_layout = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Percentage(25),
+                Constraint::Percentage(50),
+                Constraint::Percentage(25),
+            ])
+            .split(area);
+
+        let horizontal_layout = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([
+                Constraint::Percentage(20),
+                Constraint::Percentage(60),
+                Constraint::Percentage(20),
+            ])
+            .split(vertical_layout[1]);
+
+        horizontal_layout[1]
+    }
 
     #[test]
     fn test_render_app() {
@@ -38,6 +62,141 @@ mod tests {
         let mut terminal = Terminal::new(TestBackend::new(80, 20)).unwrap();
         terminal
             .draw(|frame| frame.render_widget(&app, frame.area()))
+            .unwrap();
+        assert_snapshot!(terminal.backend());
+    }
+
+    #[test]
+    fn test_render_app_game_style_not_chosen() {
+        unsafe {
+            std::env::set_var("HOME", env!("CARGO_MANIFEST_DIR"));
+        }
+        let mut app = build_app();
+        let mut terminal = Terminal::new(TestBackend::new(80, 20)).unwrap();
+        terminal
+            .draw(|frame| {
+                frame.render_widget(&app, frame.area());
+
+                let popup_area = get_centered_popup_area(frame.area());
+
+                frame.render_widget(ratatui::widgets::Clear, popup_area);
+
+                render_game_style_popup(frame, &mut app);
+            })
+            .unwrap();
+        assert_snapshot!(terminal.backend());
+    }
+
+    #[test]
+    fn test_render_app_scores() {
+        unsafe {
+            std::env::set_var("HOME", env!("CARGO_MANIFEST_DIR"));
+        }
+        let app = build_app();
+        let mut terminal = Terminal::new(TestBackend::new(80, 20)).unwrap();
+        terminal
+            .draw(|frame| {
+                frame.render_widget(&app, frame.area());
+
+                let popup_area = get_centered_popup_area(frame.area());
+
+                frame.render_widget(ratatui::widgets::Clear, popup_area);
+
+                render_scores_popup(frame);
+            })
+            .unwrap();
+        assert_snapshot!(terminal.backend());
+    }
+
+    #[test]
+    fn test_render_app_game_over() {
+        unsafe {
+            std::env::set_var("HOME", env!("CARGO_MANIFEST_DIR"));
+        }
+        let app = build_app();
+        let mut terminal = Terminal::new(TestBackend::new(80, 20)).unwrap();
+        terminal
+            .draw(|frame| {
+                frame.render_widget(&app, frame.area());
+
+                let popup_area = get_centered_popup_area(frame.area());
+
+                frame.render_widget(ratatui::widgets::Clear, popup_area);
+
+                render_game_over_popup(frame, &app);
+            })
+            .unwrap();
+        assert_snapshot!(terminal.backend());
+    }
+
+    #[test]
+    fn test_render_app_move_left() {
+        unsafe {
+            std::env::set_var("HOME", env!("CARGO_MANIFEST_DIR"));
+        }
+        let mut app = build_app();
+        let mut terminal = Terminal::new(TestBackend::new(80, 20)).unwrap();
+        terminal
+            .draw(|frame| {
+                let mut cells = app.grid.cells;
+                for row in &mut cells {
+                    *row = merge_row_horizontal(&mut app, *row, crate::app::Direction::Left)
+                }
+                app.grid.cells = cells;
+                frame.render_widget(&app, frame.area());
+            })
+            .unwrap();
+        assert_snapshot!(terminal.backend());
+    }
+
+    #[test]
+    fn test_render_app_move_right() {
+        unsafe {
+            std::env::set_var("HOME", env!("CARGO_MANIFEST_DIR"));
+        }
+        let mut app = build_app();
+        let mut terminal = Terminal::new(TestBackend::new(80, 20)).unwrap();
+        terminal
+            .draw(|frame| {
+                let mut cells = app.grid.cells;
+                for row in &mut cells {
+                    *row = merge_row_horizontal(&mut app, *row, crate::app::Direction::Right)
+                }
+                app.grid.cells = cells;
+                frame.render_widget(&app, frame.area());
+            })
+            .unwrap();
+        assert_snapshot!(terminal.backend());
+    }
+
+    #[test]
+    fn test_render_app_move_up() {
+        unsafe {
+            std::env::set_var("HOME", env!("CARGO_MANIFEST_DIR"));
+        }
+        let mut app = build_app();
+        let mut terminal = Terminal::new(TestBackend::new(80, 20)).unwrap();
+        terminal
+            .draw(|frame| {
+                app.grid = merge_row_vertical(&mut app, crate::app::Direction::Up);
+                frame.render_widget(&app, frame.area());
+            })
+            .unwrap();
+        assert_snapshot!(terminal.backend());
+    }
+
+    #[test]
+    fn test_render_app_move_down() {
+        unsafe {
+            std::env::set_var("HOME", env!("CARGO_MANIFEST_DIR"));
+        }
+        let mut app = build_app();
+        let mut terminal = Terminal::new(TestBackend::new(80, 20)).unwrap();
+        terminal
+            .draw(|frame| {
+                app.grid = merge_row_vertical(&mut app, crate::app::Direction::Down);
+                frame.render_widget(&app, frame.area());
+            })
             .unwrap();
         assert_snapshot!(terminal.backend());
     }

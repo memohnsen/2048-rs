@@ -16,6 +16,7 @@ pub enum Commands {
 impl Commands {
     pub fn execute(&self) -> io::Result<()> {
         match self {
+            // TODO: need integration tests for all these
             Commands::Scores(subcommand) => {
                 let home = std::env::var("HOME").unwrap_or("~".to_string());
                 let mut path = PathBuf::from(home);

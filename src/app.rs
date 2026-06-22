@@ -254,7 +254,7 @@ impl App {
 /// reader tracks what val we are reading from the nums vec, if there is a merge we skip past the
 /// next index so we dont double merge the same num
 /// writer goes contiguous through each index
-fn merge_row_horizontal(app: &mut App, row: [u32; 4], direction: Direction) -> [u32; 4] {
+pub fn merge_row_horizontal(app: &mut App, row: [u32; 4], direction: Direction) -> [u32; 4] {
     let mut nums: Vec<u32> = row.into_iter().filter(|&val| val != 0).collect();
     if direction == Direction::Right || direction == Direction::Down {
         nums.reverse();
@@ -284,7 +284,7 @@ fn merge_row_horizontal(app: &mut App, row: [u32; 4], direction: Direction) -> [
 
 /// Go through the whole Grid item from App and map the current grid to columns
 /// From there it's the same mutation as above where we mutate and reverse if needed
-fn merge_row_vertical(app: &mut App, direction: Direction) -> Grid {
+pub fn merge_row_vertical(app: &mut App, direction: Direction) -> Grid {
     let mut cells = [[0; 4]; 4];
 
     for (col_index, _) in cells.into_iter().enumerate() {
